@@ -209,14 +209,15 @@ const q1Group = new THREE.Group();
 q1Group.position.y = L1;
 scene.add(q1Group);
  
-// Unión q1 (cilindro morado)
-const geoUnion = new THREE.CylinderGeometry(9, 9, 10, 32);
-geoUnion.translate(0, 5, 0);
+// Unión q1 (cilindro morado) – collar decorativo en la cima de la base,
+// sin agregar altura: se centra en y=0 del q1Group (tapa de la base L1=50).
+const geoUnion = new THREE.CylinderGeometry(11, 11, 6, 32);
+geoUnion.translate(0, 0, 0);   // centrado en y=50 (tapa de la base)
 q1Group.add(new THREE.Mesh(geoUnion, matMorado));
- 
-//  q2 (rota en Z)
+
+//  q2 (rota en Z) – pivote exactamente en y = L1 = 50 cm desde el suelo
 const q2Group = new THREE.Group();
-q2Group.position.y = 10;
+q2Group.position.y = 0;        // 0 relativo a q1Group que ya está en y=L1
 q1Group.add(q2Group);
  
 // Articulación esférica 
