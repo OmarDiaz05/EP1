@@ -63,7 +63,8 @@ const container = document.getElementById('canvas-container');
 container.innerHTML = '';
  
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xd3d3d3);
+// Fondo oscuro estilo CAD (como en la imagen)
+scene.background = new THREE.Color(0x22252a);
  
 const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 2000);
 camera.position.set(130, 110, 160);
@@ -80,17 +81,105 @@ controls.dampingFactor    = 0.08;
 controls.minDistance      = 30;
 controls.maxDistance      = 600;
  
-// Luz
-const dirLight = new THREE.DirectionalLight(0xffffff, 1.1);
+// Luces ajustadas para fondo oscuro
+const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
 dirLight.position.set(80, 140, 80);
 dirLight.castShadow = true;
 scene.add(dirLight);
-scene.add(new THREE.AmbientLight(0xaaaaaa));
+scene.add(new THREE.AmbientLight(0x666666));
  
-// Grilla y ejes
-scene.add(new THREE.GridHelper(300, 30, 0x888888, 0xbbbbbb));
-scene.add(new THREE.AxesHelper(70));
- 
+// Grilla oscura sutil
+const grid = new THREE.GridHelper(200, 20, 0x444444, 0x333333);
+grid.position.y = -0.1; 
+scene.add(grid);
+
+// -----------------------------
+// EJES X, Y, Z 
+// -----------------------------
+const axesGroup = new THREE.Group();
+scene.add(axesGroup);
+
+const axisLength = 100;
+const tickStep   = 10;
+
+// Colores exactos (X Rojo, Y Verde, Z Azul)
+const colorX = '#ff4444';
+const colorY = '#44ff44';
+const colorZ = '#4488ff';
+
+function createTextSprite(text, color, scale = 10, isBold = false) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 256; 
+    canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, 256, 256);
+    ctx.font = `${isBold ? 'bold' : 'normal'} 50px sans-serif`;
+    ctx.fillStyle = color;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, 128, 128);
+    const tex = new THREE.CanvasTexture(canvas);
+    const mat = new THREE.SpriteMaterial({ map: tex, depthTest: false, transparent: true });
+    const sprite = new THREE.Sprite(mat);
+    sprite.scale.set(scale, scale, 1);
+    sprite.renderOrder = 999;
+    return sprite;
+}
+
+// Materiales de las líneas principales
+const matX = new THREE.LineBasicMaterial({ color: colorX, linewidth: 2 });
+const matY = new THREE.LineBasicMaterial({ color: colorY, linewidth: 2 });
+const matZ = new THREE.LineBasicMaterial({ color: colorZ, linewidth: 2 });
+
+// Geometrías de las líneas
+const geoX = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), new THREE.Vector3(axisLength,0,0)]);
+const geoY = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), new THREE.Vector3(0,axisLength,0)]);
+const geoZ = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,axisLength)]);
+
+// Agregar líneas a la escena
+axesGroup.add(new THREE.Line(geoX, matX));
+axesGroup.add(new THREE.Line(geoY, matY));
+axesGroup.add(new THREE.Line(geoZ, matZ));
+
+// Etiquetas principales X, Y, Z
+const lblX = createTextSprite('X', colorX, 14, true);
+lblX.position.set(axisLength + 8, 0, 0);
+axesGroup.add(lblX);
+
+const lblY = createTextSprite('Y', colorY, 14, true);
+lblY.position.set(0, axisLength + 8, 0);
+axesGroup.add(lblY);
+
+const lblZ = createTextSprite('Z', colorZ, 14, true);
+lblZ.position.set(0, 0, axisLength + 8);
+axesGroup.add(lblZ);
+
+// Ticks (Marcas) y Números (10 a 100)
+for (let i = tickStep; i <= axisLength; i += tickStep) {
+    const textColor = '#dddddd'; // Color blanco grisáceo para los números
+
+    // Eje X
+    const numX = createTextSprite(i.toString(), textColor, 6.5);
+    numX.position.set(i, -3, 0); // Desplazado ligeramente hacia abajo
+    axesGroup.add(numX);
+    const tX = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(i,0,0), new THREE.Vector3(i,-1.5,0)]), matX);
+    axesGroup.add(tX);
+
+    // Eje Y
+    const numY = createTextSprite(i.toString(), textColor, 6.5);
+    numY.position.set(-3.5, i, 0); // Desplazado a la izquierda
+    axesGroup.add(numY);
+    const tY = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,i,0), new THREE.Vector3(-1.5,i,0)]), matY);
+    axesGroup.add(tY);
+
+    // Eje Z
+    const numZ = createTextSprite(i.toString(), textColor, 6.5);
+    numZ.position.set(0, -3, i); // Desplazado hacia abajo en Z
+    axesGroup.add(numZ);
+    const tZ = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,i), new THREE.Vector3(0,-1.5,i)]), matZ);
+    axesGroup.add(tZ);
+}
+
 // ==========================================
 // MATERIALES
 // ==========================================
@@ -108,14 +197,14 @@ const matAmarillo = new THREE.MeshPhongMaterial({
 // CONSTRUCCIÓN DEL ROBOT
 // ==========================================
  
-// 1. BASE – cilindro rojo (l1 = 50 cm)
+// BASE – cilindro rojo (l1 = 50 cm)
 const geoBase = new THREE.CylinderGeometry(10, 12, L1, 32);
 geoBase.translate(0, L1 / 2, 0);
 const baseMesh = new THREE.Mesh(geoBase, matRojo);
 baseMesh.castShadow = true;
 scene.add(baseMesh);
  
-// 2. GRUPO q1 – articulación azimutal (rota en Y)
+// q1 (rota en Y)
 const q1Group = new THREE.Group();
 q1Group.position.y = L1;
 scene.add(q1Group);
@@ -125,12 +214,12 @@ const geoUnion = new THREE.CylinderGeometry(9, 9, 10, 32);
 geoUnion.translate(0, 5, 0);
 q1Group.add(new THREE.Mesh(geoUnion, matMorado));
  
-// 3. GRUPO q2 – articulación polar (rota en Z local)
+//  q2 (rota en Z)
 const q2Group = new THREE.Group();
 q2Group.position.y = 10;
 q1Group.add(q2Group);
  
-// Articulación esférica (esfera azul)
+// Articulación esférica 
 const geoCodo = new THREE.SphereGeometry(8, 32, 32);
 q2Group.add(new THREE.Mesh(geoCodo, matAzul));
  
@@ -146,13 +235,7 @@ brazoMesh.castShadow = true;
 q3Group.add(brazoMesh);
  
 // ==========================================
-// PINZA REALISTA DE 8 CM
-//   Estructura:
-//     - Muñeca  : cil. gris 3 cm de alto   → y: 0..3
-//     - Palma   : caja gris 2 cm de alto    → y: 3..5
-//     - Dedo izq: caja 5 cm de alto         → y: 5..8 (desplazado −2.5 en X)
-//     - Dedo der: caja 5 cm de alto         → y: 5..8 (desplazado +2.5 en X)
-//   Total largo: 8 cm  ✓ (examen punto b)
+// PINZA DE 8 CM
 // ==========================================
 const pinzaGroup = new THREE.Group();
 q3Group.add(pinzaGroup);
@@ -178,7 +261,7 @@ function crearDedo(offsetX) {
     const geoFal = new THREE.BoxGeometry(2.8, 3, 2.8);
     geoFal.translate(0, 6.5, 0);  // y: 5..8
     group.add(new THREE.Mesh(geoFal, matGris));
-    // Punta (cono truncado)
+    // Punta 
     const geoPunta = new THREE.CylinderGeometry(0.8, 1.4, 1, 12);
     geoPunta.translate(0, 8.5, 0);
     group.add(new THREE.Mesh(geoPunta, matGrisOsc));
@@ -194,7 +277,7 @@ const marcadorMesh = new THREE.Mesh(
     new THREE.SphereGeometry(2, 16, 16),
     matAmarillo
 );
-// posición relativa en pinzaGroup: punta de los dedos ≈ y=9
+
 marcadorMesh.position.y = 9;
 pinzaGroup.add(marcadorMesh);
  
@@ -210,7 +293,7 @@ function actualizarRobot() {
     const q2 = deg2rad(q2_deg);
     const q3 = q3_cm + LONGITUD_PINZA;  // extensión total con pinza
  
-    // ── Cinemática directa (matriz T3 del examen) ──
+    // ── Cinemática directa (matriz T3)
     const x = q3 * Math.cos(q1) * Math.sin(q2);
     const y = q3 * Math.sin(q1) * Math.sin(q2);
     const z = q3 * Math.cos(q2) + L1;
@@ -223,18 +306,14 @@ function actualizarRobot() {
     q1Group.rotation.y = q1;
     q2Group.rotation.z = q2;
  
-    // Escalar el brazo verde (mínimo visual 0.1 para no desaparecer)
+    // Escalar el brazo verde 
     brazoMesh.scale.y = Math.max(q3_cm, 0.1);
  
     // Colocar la pinza en la punta del brazo extensible
     pinzaGroup.position.y = q3_cm;
 }
  
-// ==========================================
-// POLINOMIO DE 5° ORDEN (examen)
-// q(0)=q0, q'(0)=0, q''(0)=0
-// q(T)=qf, q'(T)=0, q''(T)=0
-// ==========================================
+
 function calcCoef(q0, qf, T) {
     const d = qf - q0;
     return {
@@ -327,7 +406,7 @@ function animate(ts) {
         if (pct >= 1) {
             animando = false;
             playBtn.disabled    = false;
-            playBtn.textContent = '▶ PLAY';
+            playBtn.textContent = '▶ Empezar Animacion';
         }
     }
  

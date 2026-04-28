@@ -1,0 +1,130 @@
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background: #1c2533;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            font-size: 13px;
+        }
+ 
+        /* ══ Layout raíz: header + (sidebar | canvas) ══ */
+        #app {
+            display: grid;
+            grid-template-rows: 42px 1fr;
+            grid-template-columns: 295px 1fr;
+            height: 100vh;
+            width:  100vw;
+        }
+ 
+        /* ── Header ── */
+        #header {
+            grid-column: 1 / -1;
+            background: #0d1520;
+            border-bottom: 1px solid #2a3a55;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: #7eb8f7;
+        }
+        #header h1 { font-size: .9rem; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; }
+        .badge-ep {
+            background: #e67e22; color: #fff;
+            font-size: .68rem; font-weight: 800;
+            padding: 2px 7px; border-radius: 4px; letter-spacing: 1px;
+        }
+ 
+        /* ── Sidebar ── */
+        #sidebar {
+            background: #1a2436;
+            border-right: 1px solid #2a3a55;
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            padding: 8px 7px;
+            gap: 7px;
+            scrollbar-width: thin;
+            scrollbar-color: #2a3a55 transparent;
+        }
+ 
+        /* ── Tarjetas genéricas ── */
+        .s-card { border-radius: 7px; overflow: hidden; flex-shrink: 0; }
+        .s-head {
+            padding: 5px 9px;
+            font-size: .72rem; font-weight: 700; letter-spacing: .4px;
+            text-transform: uppercase; color: #fff;
+        }
+        .s-body { padding: 7px 9px; }
+ 
+        .c-ctrl .s-head { background: #1e3a6e; }
+        .c-ctrl .s-body { background: #1c2e4a; }
+        .c-pos  .s-head { background: #145a32; }
+        .c-pos  .s-body { background: #1a3828; }
+        .c-tray .s-head { background: #7d3c00; }
+        .c-tray .s-body { background: #2e1a00; }
+ 
+        /* ── Articulaciones ── */
+        .jnt { margin-bottom: 5px; }
+        .jnt-lbl {
+            display: flex; justify-content: space-between;
+            font-size: .69rem; color: #8baad0; margin-bottom: 2px;
+        }
+        .jnt-lbl span { color: #e0e8f5; font-weight: 700; }
+        .jnt-row { display: flex; align-items: center; gap: 5px; }
+        .jnt-row input[type="range"] { flex: 1; accent-color: #4a90d9; cursor: pointer; }
+        .jnt-row input[type="number"] {
+            width: 56px; background: #0d1520; border: 1px solid #2a3a55;
+            color: #e0e8f5; border-radius: 4px; padding: 3px 4px;
+            font-size: .78rem; text-align: center;
+        }
+        .jnt-row input[type="number"]:focus { outline: none; border-color: #4a90d9; }
+        .jnt-hint { font-size: .6rem; color: #3a5a7a; }
+ 
+        /* ── Posición cartesiana ── */
+        .pos-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 3px 0; border-bottom: 1px solid #1f3825;
+        }
+        .pos-item:last-child { border-bottom: none; }
+        .pos-lbl { font-size: .72rem; color: #6ab07a; font-weight: 700; }
+        .pos-val { font-size: .85rem; color: #a8e6b8; font-weight: 700; font-variant-numeric: tabular-nums; }
+ 
+        /* ── Trayectoria ── */
+        .tray-lbl { font-size: .68rem; color: #c97a3a; margin-bottom: 2px; display: block; }
+        .tray-grid {
+            display: grid; grid-template-columns: 1fr 1fr 1fr;
+            gap: 4px; margin-bottom: 2px;
+        }
+        .tray-grid input, #traj_time_input {
+            background: #0d1520; border: 1px solid #3a2800;
+            color: #f0d080; border-radius: 5px; padding: 5px 3px;
+            font-size: .85rem; font-weight: 700; text-align: center; width: 100%;
+        }
+        .tray-grid input:focus, #traj_time_input:focus { outline: none; border-color: #e67e22; }
+        .tray-sub { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin-bottom: 6px; }
+        .tray-sub span { font-size: .6rem; color: #7a5a30; text-align: center; }
+        #traj_time_input { margin-bottom: 7px; }
+        .prog-wrap { background: #0d1520; border-radius: 3px; height: 5px; margin-bottom: 7px; overflow: hidden; }
+        #progressBar {
+            height: 5px; border-radius: 3px;
+            background: linear-gradient(90deg, #e67e22, #f1c40f);
+            width: 0%; transition: width .04s linear;
+        }
+        #playBtn {
+            width: 100%; background: #e67e22; border: none; color: #fff;
+            font-weight: 800; font-size: .82rem; letter-spacing: 1.5px;
+            border-radius: 6px; padding: 7px; cursor: pointer;
+            transition: background .2s, transform .1s;
+        }
+        #playBtn:hover:not(:disabled) { background: #f39c12; transform: scale(1.02); }
+        #playBtn:disabled { opacity: .5; cursor: not-allowed; }
+ 
+        /* ── Canvas ── */
+        #canvas-container {
+            width: 100%; height: 100%;
+            background: #d3d3d3; display: block; overflow: hidden;
+        }
